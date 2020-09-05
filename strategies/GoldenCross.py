@@ -75,6 +75,8 @@ class GoldenCross(bt.Strategy):
     def show_max(cls):
         #print("BEST: {}-{} : {:.2f}%".format(cls.max_fast, cls.max_slow, 100.0 * cls.max_roi)
         #print(sorted(cls.max_res, key=cls.max_res[]))
+        print("*"*20)
         cls.results.sort(key=lambda x: x[2], reverse=True)
         for result in cls.results:
             print(result)
+        print("*"*20)

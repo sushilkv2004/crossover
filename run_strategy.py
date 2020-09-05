@@ -2,13 +2,16 @@ import os, sys, argparse
 import pandas as pd
 import backtrader as bt
 from backtrader import Cerebro
-from strategies.GoldenCross import GoldenCross
-from strategies.BuyHold import BuyHold
+from strategies.GoldenCross  import GoldenCross
+from strategies.BuyHold  import BuyHold
+from strategies.MacdStrat import MacdStrat
 
 cerebro = bt.Cerebro()
 
-#prices = pd.read_csv('data/spy_2000-2020.csv', index_col='Date', parse_dates=True)
-prices = pd.read_csv('data/spy_5yrs.csv', index_col='Date', parse_dates=True)
+prices = pd.read_csv('data/spy_2000-2020.csv', index_col='Date', parse_dates=True)
+#prices = pd.read_csv('data/spy_5yrs.csv', index_col='Date', parse_dates=True)
+#prices = pd.read_csv('data/spy_1yr.csv', index_col='Date', parse_dates=True)
+#prices = pd.read_csv('data/spy_2yrs.csv', index_col='Date', parse_dates=True)
 
 
 # initialize the Cerebro engine
@@ -21,31 +24,36 @@ cerebro.adddata(feed)
 
 strategies = {
     "golden_cross": GoldenCross,
-    "buy_hold": BuyHold
+    "buy_hold": BuyHold,
+    "macd":MacdStrat,
+    "macd_opt":MacdStrat
 }
 
-# parse command line arguments
-parser = argparse.ArgumentParser()
-parser.add_argument("strategy", help="Which strategy to run", type=str)
-args = parser.parse_args()
+strategy = "macd_opt"
 
-
-if args.strategy == "golden_cross_opt":
-    strats = cerebro.optstrategy(
+if strategy == "golden_cross_opt":
+    cerebro.optstrategy(
         GoldenCross,
         fast=range(40, 60, 10), slow=range(160, 220, 20),
         #fast=range(10, 30, 10), slow=range(50, 90, 20),
-
     )
     cerebro.run(maxcpus=1)
     GoldenCross.show_max()
+elif strategy == "macd_opt":
+    strats = cerebro.optstrategy(
+        MacdStrat,
+        fast=range(5, 20, 1), slow=range(10,40,2),
+    )
+    cerebro.run(maxcpus=1)
+    best_fast, best_slow, best_roi = MacdStrat.show_max()
+    print('Best params: fast={}, slow={}, roi={}'.format(best_fast, best_slow, best_roi))
 
-elif not args.strategy in strategies:
-    print("Invalid strategy, must select one of {}".format(strategies.keys()))
-    sys.exit()
+    cerebro.addstrategy(strategy=strategies[strategy],fast=best_fast, slow=best_slow)
+    cerebro.run()
+    cerebro.plot()
 
 else:
-    cerebro.addstrategy(strategy=strategies[args.strategy])
+    cerebro.addstrategy(strategy=strategies[strategy])
     cerebro.run()
     cerebro.plot()
 
