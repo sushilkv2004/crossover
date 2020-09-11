@@ -5,13 +5,23 @@ from backtrader import Cerebro
 from strategies.GoldenCross  import GoldenCross
 from strategies.BuyHold  import BuyHold
 from strategies.MacdStrat import MacdStrat
+from strategies.MovingAverage import MovingAverage
 
 cerebro = bt.Cerebro()
 
-prices = pd.read_csv('data/spy_2000-2020.csv', index_col='Date', parse_dates=True)
-#prices = pd.read_csv('data/spy_5yrs.csv', index_col='Date', parse_dates=True)
-#prices = pd.read_csv('data/spy_1yr.csv', index_col='Date', parse_dates=True)
-#prices = pd.read_csv('data/spy_2yrs.csv', index_col='Date', parse_dates=True)
+#prices = pd.read_csv('data/spy_2000-2020.csv', index_col='Date', parse_dates=True)
+#prices = pd.read_csv('../datasets/daily/AMZN.csv', index_col='Date', parse_dates=True)
+
+
+#prices = pd.read_csv('../datasets/data/spy_1yr.csv', index_col='Date', parse_dates=True)
+#prices = pd.read_csv('../datasets/data/spy_2yrs.csv', index_col='Date', parse_dates=True)
+#prices = pd.read_csv('../datasets/data/spy_5yrs.csv', index_col='Date', parse_dates=True)
+
+
+symbol = 'CLDR'
+#prices = pd.read_csv('../datasets/data/{}_5Yrs.csv'.format(symbol), index_col='Date', parse_dates=True)
+
+prices =  pd.read_csv('../datasets/data/CLDR_max.csv', index_col='Date', parse_dates=True)
 
 
 # initialize the Cerebro engine
@@ -26,10 +36,12 @@ strategies = {
     "golden_cross": GoldenCross,
     "buy_hold": BuyHold,
     "macd":MacdStrat,
-    "macd_opt":MacdStrat
+    "macd_opt":MacdStrat,
+    "moving_avg":MovingAverage
+
 }
 
-strategy = "macd_opt"
+strategy = "moving_avg"
 
 if strategy == "golden_cross_opt":
     cerebro.optstrategy(
@@ -42,18 +54,29 @@ if strategy == "golden_cross_opt":
 elif strategy == "macd_opt":
     strats = cerebro.optstrategy(
         MacdStrat,
-        fast=range(5, 20, 1), slow=range(10,40,2),
+        fast=range(8, 16, 1), slow=range(16,32,2),
     )
     cerebro.run(maxcpus=1)
     best_fast, best_slow, best_roi = MacdStrat.show_max()
     print('Best params: fast={}, slow={}, roi={}'.format(best_fast, best_slow, best_roi))
+    """
+    elif strategy == "macd":
+        cerebro.addstrategy(strategy=strategies[strategy],fast=15, slow=30)
+        cerebro.run()
+        cerebro.plot()
+    """
 
-    cerebro.addstrategy(strategy=strategies[strategy],fast=best_fast, slow=best_slow)
-    cerebro.run()
-    cerebro.plot()
+elif strategy == "moving_avg_opt":
+    strats = cerebro.optstrategy(
+        MovingAverage,
+        fast=range(8, 16, 1), slow=range(16,32,2), ticker=symbol
+    )
+    cerebro.run(maxcpus=1)
+    best_fast, best_slow, best_roi = MovingAverage.show_max()
+    print('Best params: fast={}, slow={}, roi={}'.format(best_fast, best_slow, best_roi))
 
 else:
-    cerebro.addstrategy(strategy=strategies[strategy])
+    cerebro.addstrategy(strategy=strategies[strategy], ticker=symbol)
     cerebro.run()
-    cerebro.plot()
+    #cerebro.plot()
 

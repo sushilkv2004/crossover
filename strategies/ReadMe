@@ -1,0 +1,27 @@
+Elder: EMA on daily chart 11-22
+ - longer values for longer timeframe
+ - value of stock lies between the these two line
+ - for flat EMAs don't use this
+ - don't use one or 2 only indicators
+S1: 2 EMAs : using 2 EMAs - (11, 22) buy when the price touches the slower line
+
+MacD:
+    - 3 EMAs - 12, 26 and 9
+          fast:  MACD line  -> 26 EMA - 12 EMA
+          slow:  9 day EMA of fast line
+          MACD-hist = fast - slow
+
+Lines:
+TRADING RULES FOR MACD LINES
+	1. When the fast MACD line (black) crosses above the slow Signal line (red), it gives a buy signal. Go long, and place a protective stop below the latest minor low.
+When the fast line crosses below the slow line, it gives a sell signal. Go short, and place a protective stop above the latest minor high
+
+Histogram:
+• When MACD Lines cross over, MACD-Histogram, which is derived from them, crosses above or below its zero line.
+• MACD-Histogram measures the difference between the MACD line and the Signal line. It plots that difference as a histogram—a series of vertical bars. 
+
+
+S2: Buy when MACD-Histogram stops falling and ticks up. Place a protective stop below the latest minor low.
+    Sell short when MACD-Histogram stops rising and ticks down. Place a protective stop above the latest minor high.
+
+

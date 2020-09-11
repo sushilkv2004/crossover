@@ -25,8 +25,11 @@ class BuyHold(bt.Strategy):
 
     def stop(self):
         # calculate the actual returns
-        #self.close()
+        self.close()
+        print('Sold')
+
         print(self.broker.get_cash())
+        print(self.broker.get_value(), self.val_start)
 
         self.roi = (self.broker.get_value() / self.val_start) - 1.0
         print('ROI:        {:.2f}%'.format(100.0 * self.roi))
