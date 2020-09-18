@@ -15,6 +15,7 @@ class MacdStrat(bt.Strategy):
         ('slow', 26),
         ('macdsig', 9),
         ('order_pct', 0.95),
+        ('ticker', '')
     )
 
     def __init__(self):
@@ -25,6 +26,7 @@ class MacdStrat(bt.Strategy):
 
         self.size = 0
         self.roi = 0
+        self.trade_count = 0
 
         #self.adxr = bt.indicators.AverageDirectionalMovementIndexRating()
         #self.adx = bt.indicators.AverageDirectionalMovementIndex()
@@ -49,6 +51,7 @@ class MacdStrat(bt.Strategy):
 
                 # print("Buy {} shares of {} at {}".format(self.size, self.p.ticker, self.data.close[0]))
                 self.buy(size=self.size)
+                self.trade_count += 1
                 #print(f'----------Buy executed @{self.data.close}-------')
 
         if self.position.size > 0:
@@ -58,65 +61,19 @@ class MacdStrat(bt.Strategy):
                 # print("Sell {} shares of {} at {}".format(self.size, self.p.ticker, self.data.close[0]))
                 self.close()
                 #print(f'----------Close executed @{self.data.close}-------')
-        """ 
-        1 yr spy
-        Best params: fast=10, slow=30, roi=20.3
-        1 : (10, 30, 20.3)
-        2 : (10, 28, 19.8)
-        3 : (11, 30, 19.39)
-        next2: Best params: fast=8, slow=28, roi=20.12
 
-        
-        2 yrs spy
-        Best params: fast=11, slow=16, roi=29.51
-        1 : (11, 16, 29.51)
-        2 : (8, 18, 27.73)
-        3 : (9, 16, 27.73)
-        Next2: Best params: fast=8, slow=16, roi=20.43
-
-
-        5 yr spy:
-        Best params: fast=10, slow=16, roi=69.56
-        1 : (10, 16, 69.56)
-        2 : (8, 18, 69.31)
-        3 : (8, 16, 68.84)
-        
-        Next2: Best params: fast=8, slow=28, roi=51.49
-
-
-        """
-
-    def next2(self):
-
-        if self.position.size == 0:
-            # if self.macd[0] > 0: 16%
-            if self.macd.macd - self.macd.signal > 0 and self.ao > 0:  # 21%
-                # if self.macd.macd - self.macd.signal> self.macd.macd[-1] - self.macd.signal[-1]: #8.74%
-
-                amount_to_invest = (self.p.order_pct * self.broker.cash)
-                self.size = math.floor(amount_to_invest / self.data.close)
-
-                # print("Buy {} shares of {} at {}".format(self.size, self.p.ticker, self.data.close[0]))
-                self.buy(size=self.size)
-                #print(f'----------Buy executed @{self.data.close}-------')
-
-        if self.position.size > 0:
-            # if self.macd[0] < 0:
-            if self.macd.macd - self.macd.signal < 0 and self.ao < 0:
-                # if self.macd.macd - self.macd.signal < self.macd.macd[-1] - self.macd.signal[-1]:
-                # print("Sell {} shares of {} at {}".format(self.size, self.p.ticker, self.data.close[0]))
-                self.close()
-                #print(f'----------Close executed @{self.data.close}-------')
 
     def stop(self):
         # calculate the actual returns
         self.roi = (self.broker.get_value() / self.val_start) - 1.0
 
-        print('{}-{}:'.format(self.params.fast, self.params.slow), end="")
+        #print('{}-{}:'.format(self.params.fast, self.params.slow), end="")
 
-        print(' ROI:        {:.2f}%'.format(100.0 * self.roi))
+        print('  Strt={} End={} Traded={} ROI={:.2f}%'.format(self.val_start, self.broker.get_value(),
+                                                                self.trade_count, 100.0 * self.roi))
 
-        MacdStrat.results.append((self.params.fast, self.params.slow, round(100.0 * self.roi, 2)))
+
+        #MacdStrat.results.append((self.params.fast, self.params.slow, round(100.0 * self.roi, 2)))
 
 
     @classmethod

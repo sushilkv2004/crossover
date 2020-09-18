@@ -4,25 +4,27 @@ import backtrader as bt
 from backtrader import Cerebro
 from strategies.GoldenCross  import GoldenCross
 from strategies.BuyHold  import BuyHold
+#from strategies.MacdStratTalib import MacdStrat
 from strategies.MacdStrat import MacdStrat
+
 from strategies.MovingAverage import MovingAverage
+from strategies.Sar import Sar
+from strategies.AdxMacd import AdxMacd
+
+from get_data import get_data
+
 
 cerebro = bt.Cerebro()
 
-#prices = pd.read_csv('data/spy_2000-2020.csv', index_col='Date', parse_dates=True)
-#prices = pd.read_csv('../datasets/daily/AMZN.csv', index_col='Date', parse_dates=True)
 
+symbol = 'TSLA' #CLDR'
 
-#prices = pd.read_csv('../datasets/data/spy_1yr.csv', index_col='Date', parse_dates=True)
-#prices = pd.read_csv('../datasets/data/spy_2yrs.csv', index_col='Date', parse_dates=True)
-#prices = pd.read_csv('../datasets/data/spy_5yrs.csv', index_col='Date', parse_dates=True)
+prices = get_data(symbol, "01-01-2020","09-15-2020")
+print(prices.head())
 
+prices =  pd.read_csv(f'../datasets/data_1yr_sep/{symbol}.csv', index_col='Date', parse_dates=True)
 
-symbol = 'CLDR'
-#prices = pd.read_csv('../datasets/data/{}_5Yrs.csv'.format(symbol), index_col='Date', parse_dates=True)
-
-prices =  pd.read_csv('../datasets/data/CLDR_max.csv', index_col='Date', parse_dates=True)
-
+print(prices.head())
 
 # initialize the Cerebro engine
 cerebro = Cerebro()
@@ -37,11 +39,13 @@ strategies = {
     "buy_hold": BuyHold,
     "macd":MacdStrat,
     "macd_opt":MacdStrat,
-    "moving_avg":MovingAverage
-
+    "moving_avg":MovingAverage,
+    "sar":Sar,
+    "adx_macd":AdxMacd
 }
 
-strategy = "moving_avg"
+#check against - golden_cross, buy_hold, macd, moving_avg, sar
+strategy = "sar"
 
 if strategy == "golden_cross_opt":
     cerebro.optstrategy(
@@ -78,5 +82,5 @@ elif strategy == "moving_avg_opt":
 else:
     cerebro.addstrategy(strategy=strategies[strategy], ticker=symbol)
     cerebro.run()
-    #cerebro.plot()
+    cerebro.plot()
 

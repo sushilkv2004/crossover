@@ -36,6 +36,7 @@ class GoldenCross(bt.Strategy):
             self.fastma, 
             self.slowma
         )
+        self.trade_count = 0
         self.size = 0
         self.roi = 0
 
@@ -50,6 +51,7 @@ class GoldenCross(bt.Strategy):
 
                 #print("Buy {} shares of {} at {}".format(self.size, self.p.ticker, self.data.close[0]))
                 self.buy(size=self.size)
+                self.trade_count += 1
             
         if self.position.size > 0:
             if self.crossover < 0:
@@ -59,9 +61,10 @@ class GoldenCross(bt.Strategy):
     def stop(self):
         # calculate the actual returns
         self.roi = (self.broker.get_value() / self.val_start) - 1.0
-        print('{}-{}:'.format(self.params.fast, self.params.slow), end="")
-
-        print(' ROI:        {:.2f}%'.format(100.0 * self.roi))
+        #print('{}-{}:'.format(self.params.fast, self.params.slow), end="")
+        print('   Strt = {} End={}'.format(self.val_start, self.broker.get_value()))
+        print(f'  Traded:{self.trade_count}')
+        print('  ROI:        {:.2f}%'.format(100.0 * self.roi))
 
         GoldenCross.results.append((self.params.fast, self.params.slow, round(100.0 * self.roi, 2)))
         """

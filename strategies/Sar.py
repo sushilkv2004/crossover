@@ -2,7 +2,7 @@ import math
 import backtrader as bt
 
 
-class MovingAverage(bt.Strategy):
+class Sar(bt.Strategy):
 
     results = []
     #max_roi = 0
@@ -27,13 +27,14 @@ class MovingAverage(bt.Strategy):
             plotname='26 day'
         )
 
-        """self.crossover = bt.indicators.CrossOver(
-            self.fastma, 
-            self.slowma
-        )"""
+        self.sar = bt.talib.SAR(
+            self.data.high,
+            self.data.low
+        )
+
+        self.trade_count = 0
         self.size = 0
         self.roi = 0
-        self.trade_count = 0
 
     def start(self):
             self.val_start = self.broker.get_cash()  # keep the starting cash
@@ -41,23 +42,19 @@ class MovingAverage(bt.Strategy):
 
     def next(self):
         if self.position.size == 0:
-            if self.fastma > self.slowma:
-            #if self.crossover > 0:
+            if self.sar < self.data.close[0]:
                 amount_to_invest = (self.p.order_pct * self.broker.cash)
                 self.size = math.floor(amount_to_invest / self.data.close)
                 if  self.first_trade:
-                    #print("Frist:",  self.PriceDateTime, self.fastma, self.slowma, self.crossover)
                     self.first_trade = False
 
-                #print("Buy {} shares of {} at {} diff {}".format(self.size, self.p.ticker, self.data.close[0],  self.fastma - self.slowma))
+                #print("Buy {} shares of {} at {} diff {}".format(self.size, self.p.ticker, self.data.close[0],  self.fastma - self.slowma, self.data.close[0]-self.sar))
                 self.buy(size=self.size)
                 self.trade_count += 1
-
             
-        if self.position.size > 0:
-            if self.fastma < self.slowma:
-            #if self.crossover < 0:
-                #print("Sell {} shares of {} at {} diff {}".format(self.size, self.p.ticker, self.data.close[0], self.fastma - self.slowma))
+        elif self.position.size > 0:
+            if self.sar > self.data.close[0]:
+                #print("Sell {} shares of {} at {} diff {}".format(self.size, self.p.ticker, self.data.close[0], self.fastma - self.slowma, self.sar-self.data.close[0]))
                 self.close()
 
     def stop(self):
@@ -69,7 +66,7 @@ class MovingAverage(bt.Strategy):
         print('  Strt={} End={} Traded={} ROI={:.2f}%'.format(self.val_start, self.broker.get_value(),
                                                                 self.trade_count, 100.0 * self.roi))
 
-        MovingAverage.results.append((self.params.fast, self.params.slow, round(100.0 * self.roi, 2)))
+        #Sar.results.append((self.params.fast, self.params.slow, round(100.0 * self.roi, 2)))
 
     @classmethod
     def show_max(cls):

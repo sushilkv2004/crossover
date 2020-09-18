@@ -2,35 +2,27 @@ import math
 import backtrader as bt
 
 
-class MovingAverage(bt.Strategy):
+class AdxMacd(bt.Strategy):
 
     results = []
-    #max_roi = 0
-    #max_fast = 0
-    #max_slow = 0
 
-    params = (('fast', 13),
+    params = (('fast', 12),
               ('slow', 26),
+              ('macdsig', 9),
               ('order_pct', .95),
               ('ticker', 'AMZN'))
 
     def __init__(self):
-        self.fastma = bt.indicators.ExponentialMovingAverage(
-            self.data.close, 
-            period=self.p.fast, 
-            plotname='13 day'
-        )
+        self.adx = bt.talib.ADX(self.data.high, self.data.low, self.data.close)
 
-        self.slowma = bt.indicators.ExponentialMovingAverage(
-            self.data.close, 
-            period=self.p.slow, 
-            plotname='26 day'
-        )
+        self.plus_di = bt.talib.PLUS_DI(self.data.high, self.data.low, self.data.close)
 
-        """self.crossover = bt.indicators.CrossOver(
-            self.fastma, 
-            self.slowma
-        )"""
+        self.minus_di = bt.talib.MINUS_DI(self.data.high, self.data.low, self.data.close)
+
+        self.macd = bt.indicators.MACD(self.data,
+                                       period_me1=self.p.fast,
+                                       period_me2=self.p.slow,
+                                       period_signal=self.p.macdsig)
         self.size = 0
         self.roi = 0
         self.trade_count = 0
@@ -41,23 +33,22 @@ class MovingAverage(bt.Strategy):
 
     def next(self):
         if self.position.size == 0:
-            if self.fastma > self.slowma:
-            #if self.crossover > 0:
+            if self.adx > 15 and self.adx > self.minus_di and self.plus_di > self.minus_di \
+                    and self.macd.macd > self.macd.signal:
+
                 amount_to_invest = (self.p.order_pct * self.broker.cash)
                 self.size = math.floor(amount_to_invest / self.data.close)
                 if  self.first_trade:
                     #print("Frist:",  self.PriceDateTime, self.fastma, self.slowma, self.crossover)
                     self.first_trade = False
-
-                #print("Buy {} shares of {} at {} diff {}".format(self.size, self.p.ticker, self.data.close[0],  self.fastma - self.slowma))
+                #print("Buy  at {} total = {}".format(self.data.close[0], self.broker.get_value()))
                 self.buy(size=self.size)
                 self.trade_count += 1
 
             
         if self.position.size > 0:
-            if self.fastma < self.slowma:
-            #if self.crossover < 0:
-                #print("Sell {} shares of {} at {} diff {}".format(self.size, self.p.ticker, self.data.close[0], self.fastma - self.slowma))
+            if self.plus_di <  self.minus_di and self.macd.macd < self.macd.signal:
+                #print("Sell at {} total = {}".format(self.data.close[0], self.broker.get_value()))
                 self.close()
 
     def stop(self):
@@ -68,8 +59,7 @@ class MovingAverage(bt.Strategy):
         self.roi = (self.broker.get_value() / self.val_start) - 1.0
         print('  Strt={} End={} Traded={} ROI={:.2f}%'.format(self.val_start, self.broker.get_value(),
                                                                 self.trade_count, 100.0 * self.roi))
-
-        MovingAverage.results.append((self.params.fast, self.params.slow, round(100.0 * self.roi, 2)))
+        AdxMacd.results.append((self.params.fast, self.params.slow, round(100.0 * self.roi, 2)))
 
     @classmethod
     def show_max(cls):

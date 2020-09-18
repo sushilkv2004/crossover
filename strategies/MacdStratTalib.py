@@ -15,10 +15,11 @@ class MacdStrat(bt.Strategy):
         ('slow', 26),
         ('macdsig', 9),
         ('order_pct', 0.95),
+        ('ticker', '')
     )
 
     def __init__(self):
-        self.macd = bt.indicators.MACD(self.data,
+        self.macd = bt.talib.MACD(self.data,
                                        period_me1=self.p.fast,
                                        period_me2=self.p.slow,
                                        period_signal=self.p.macdsig)
